@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>视频翻译工具</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>视频翻译工具</h1>
+            <p>将视频语音翻译成字幕</p>
+        </header>
+
+        <main>
+            <div class="upload-section" id="uploadSection">
+                <div class="form-group">
+                    <label for="videoInput">选择视频文件</label>
+                    <input type="file" id="videoInput" accept="video/*" multiple>
+                    <div id="fileName" class="file-name"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>源语言（视频中的语言）</label>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="src_lang" value="en" checked>
+                            <span>英语</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="src_lang" value="ja">
+                            <span>日语</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>目标语言（翻译成）</label>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="tgt_lang" value="zh" checked>
+                            <span>中文</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="tgt_lang" value="en">
+                            <span>英语</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="tgt_lang" value="ja">
+                            <span>日语</span>
+                        </label>
+                    </div>
+                </div>
+
+                <button id="uploadBtn" class="btn-primary" disabled>上传并处理</button>
+            </div>
+
+            <div class="progress-section" id="progressSection" style="display: none;">
+                <h2>处理中...</h2>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <p id="progressText">0%</p>
+                <p class="status-text" id="statusText">正在处理...</p>
+            </div>
+
+            <div class="result-section" id="resultSection" style="display: none;">
+                <h2>处理完成！</h2>
+                <div class="result-buttons">
+                    <a id="downloadBtn" class="btn-primary" href="#">下载字幕文件</a>
+                    <button id="restartBtn" class="btn-secondary">处理新视频</button>
+                </div>
+            </div>
+
+            <div class="error-section" id="errorSection" style="display: none;">
+                <h2>处理失败</h2>
+                <p id="errorText"></p>
+                <button id="retryBtn" class="btn-secondary">重试</button>
+            </div>
+        </main>
+
+        <footer>
+            <p>Powered by Whisper + MyMemory API</p>
+        </footer>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>

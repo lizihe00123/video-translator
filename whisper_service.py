@@ -2,6 +2,7 @@
 Whisper 语音识别模块
 使用 imageio-ffmpeg 提取音频，使用 Whisper 进行语音识别
 """
+from typing import Optional
 import subprocess
 import tempfile
 import whisper
@@ -10,7 +11,7 @@ import soundfile as sf
 import numpy as np
 
 
-def extract_audio(video_path: str, output_path: str | None = None) -> str:
+def extract_audio(video_path: str, output_path: Optional[str] = None) -> str:
     """使用 imageio-ffmpeg 从视频提取音频"""
     if output_path is None:
         output_path = tempfile.mktemp(suffix='.wav')
@@ -32,7 +33,7 @@ def extract_audio(video_path: str, output_path: str | None = None) -> str:
 
 
 def transcribe_video(video_path: str, model_size: str = 'tiny', 
-                     language: str | None = None) -> list:
+                     language: Optional[str] = None) -> list:
     """
     转录音频并返回带时间戳的片段列表
     """

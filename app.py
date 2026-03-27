@@ -7,7 +7,6 @@ import sys
 import uuid
 import threading
 import logging
-import signal
 import time
 from datetime import datetime, timedelta
 from flask import Flask, render_template, request, jsonify, send_file, redirect, url_for
@@ -19,7 +18,6 @@ from subtitle_gen import create_srt
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024
-app.config['TASK_TIMEOUT'] = 300
 
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs('logs', exist_ok=True)
@@ -38,7 +36,6 @@ tasks = {}
 
 ALLOWED_EXTENSIONS = {'mp4', 'avi', 'mov', 'mkv', 'flv', 'wmv'}
 
-TIMEOUT_CHECK_INTERVAL = 30
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -79,26 +76,20 @@ def cleanup_task_files(task_id):
                 logger.error(f'清理文件失败: {filename}, 错误: {e}')
 
 
-def timeout_handler(signum, frame):
-    """超时处理函数"""
-    raise TimeoutError('任务处理超时')
-
-
 def process_video(task_id, video_path, src_lang, tgt_lang):
     """在后台线程中处理视频"""
     task_start_time = time.time()
-
-    signal.signal(signal.SIGALRM, timeout_handler)
-    signal.alarm(app.config['TASK_TIMEOUT'])
 
     try:
         logger.info(f'任务 {task_id} 开始处理')
         tasks[task_id]['status'] = 'processing'
         tasks[task_id]['progress'] = 10
 
+        logger.info(f'任务 {task_id} 开始语音识别...')
         segments = transcribe_video(video_path, language=src_lang)
         tasks[task_id]['progress'] = 50
 
+        logger.info(f'任务 {task_id} 开始翻译...')
         translated_segments = translate_subtitles(segments, src_lang, tgt_lang)
         tasks[task_id]['progress'] = 80
 
@@ -113,16 +104,10 @@ def process_video(task_id, video_path, src_lang, tgt_lang):
         elapsed = time.time() - task_start_time
         logger.info(f'任务 {task_id} 完成，耗时 {elapsed:.1f}秒')
 
-    except TimeoutError:
-        tasks[task_id]['status'] = 'failed'
-        tasks[task_id]['error'] = '处理超时，请尝试更小的视频文件'
-        logger.error(f'任务 {task_id} 超时')
     except Exception as e:
         tasks[task_id]['status'] = 'failed'
         tasks[task_id]['error'] = str(e)
         logger.error(f'任务 {task_id} 失败: {e}')
-    finally:
-        signal.alarm(0)
 
 
 def cleanup_scheduler():
